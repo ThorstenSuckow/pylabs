@@ -15,6 +15,7 @@ def test_learn():
 
     w = p.learn(M_pos, M_neg)
 
-    print(w.to_array());
+    history = p.history()
 
-    pass
+    for step in history:
+        print(step)
