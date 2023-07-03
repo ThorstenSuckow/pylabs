@@ -26,7 +26,7 @@ class Perceptron:
 
             for x in positive_set:
                 scalar = w.mul(x)
-                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array()]
+                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array(), x]
                 #print("learning", scalar)
                 if scalar <= 0:
                     pos_ok = False
@@ -39,7 +39,7 @@ class Perceptron:
 
             for x in negative_set:
                 scalar = w.mul(x)
-                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array()]
+                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array(), x]
                 #print("learning", scalar)
                 if scalar > 0:
                     neg_ok = False
