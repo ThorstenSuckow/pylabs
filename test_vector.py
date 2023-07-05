@@ -12,6 +12,8 @@ class TestVector(unittest.TestCase):
         m1 = Vector([2, 3, 4, 5]);
         assert m1.mul([2, 2, 2, 3]) == 33
 
+        m1 = Vector([2, 3, 4, 5]);
+        assert m1.mul(2).to_array() == [4, 6, 8, 10]
 
         m1 = Vector([1]);
         assert m1.mul([1]) == 1
