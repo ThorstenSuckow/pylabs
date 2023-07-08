@@ -1,60 +1,95 @@
-from Vector import Vector
+import numpy
 
 
 class Perceptron:
 
-    def __init__(self, vector):
+    def __init__(self, n_epochs=10, learning_rate=1, w=None):
 
-        self._history = None
+        self.log = []
+        self.result_info = None
+        self.epoch_list = None
+        self.w = None
+        self.learning_rate = None
+        self.bias = None
+        self.epochs = None
 
-        if isinstance(vector, list):
-            self.w = Vector(vector)
+        self.config = {
+            "epochs": n_epochs,
+            "learning_rate": learning_rate,
+            "w": w,
+            "bias": 0
+        }
 
-        self.w = vector
+    def test(self, X):
 
-    def learn(self, positive_set, negative_set):
+        z = X @ self.w + self.bias
 
-        w = self.w
+        # 0 z < 0
+        # 1 z == 0
+        # 1 z > 0
+        return numpy.heaviside(z, 1)
 
-        pos_ok = False
-        neg_ok = False
+    def learn(self, X, y):
 
-        # w before weight changes, w.x, resulting w
-        history = []
+        self.apply_defaults()
 
-        while not neg_ok or not pos_ok:
+        # s sampled
+        # m features
+        (n, m) = X.shape  # n is the number of samples, m is the number of features
 
-            for x in positive_set:
-                scalar = w.mul(x)
-                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array(), x]
-                #print("learning", scalar)
-                if scalar <= 0:
-                    pos_ok = False
-                    w = w.add(x)
-                    step[3] = w.to_array()
-                    history.append(step)
-                    #print("add:", w.to_array())
-                else:
-                    pos_ok = True
+        self.w = numpy.random.randn(m) if self.w is None else self.w
+        epochs = self.epochs
 
-            for x in negative_set:
-                scalar = w.mul(x)
-                step = [w.to_array(), Vector(x).to_array(), scalar, w.to_array(), x]
-                #print("learning", scalar)
-                if scalar > 0:
-                    neg_ok = False
-                    w = w.subtract(x)
-                    step[3] = w.to_array()
-                    history.append(step)
-                    #print("sub:", w.to_array())
-                else:
-                    neg_ok = True
+        learning_rate = self.learning_rate
 
+        errors = 0
 
-        self.w = w
-        self._history = history;
+        for epoch in range(epochs):
 
-        return w
+            errors = 0
 
-    def history(self):
-        return self._history;
+            for i in range(n):
+                expected = y[i]
+                result = self.test(X[i])
+                error = 0
+
+                #   1 != 0
+                #   0 != 1
+                w_prev = self.w.copy()
+                if result != expected:
+                    error = expected - result
+
+                    self.w += (X[i] * learning_rate * error)
+                    self.bias += learning_rate * error
+
+                    errors += 1
+
+                self.log.append({
+                    "w": self.w.copy(),
+                    "w_prev": w_prev,
+                    "epoch": epoch,
+                    "bias": self.bias,
+                    "error": error,
+                    "X": X[i],
+                    "y": y[i],
+                    "result": result,
+                })
+            accuracy = 1 - (errors / n)
+            self.epoch_list.append(f'Epoch {epoch + 1}: accuracy = {accuracy:.3f}')
+
+            # if epochs are high enough, we expect to exit the training early
+            # there should be a few epochs remaining, see result_info
+            if errors == 0:
+                break
+
+        self.result_info = f'Epochs ({epoch + 1}/{self.epochs}) finished, w is = {self.w}, bias is {self.bias} error count is {errors:.3f}'
+
+        return self.w
+
+    def apply_defaults(self):
+        self.epoch_list = []
+        self.bias = self.config["bias"]
+        self.learning_rate = self.config["learning_rate"]
+        self.epochs = self.config["epochs"]
+        self.w = self.config["w"]
+        self.log = []
