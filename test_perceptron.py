@@ -1,21 +1,36 @@
+import numpy
+
 from Perceptron import Perceptron
 from Vector import Vector
 
+
 def test_learn():
 
-    M_pos = [
-        [0, 1.8], [2, 0.6]
-    ]
+    epochs = 20
+    X = numpy.array([
+        [1, 1], [2, 2], [3, 4], [4, 4]
+    ])
 
-    M_neg = [
-        [-1.2, 1.4], [0.4, -1]
-    ]
+    y = numpy.array([0, 0, 1, 1])
 
-    p = Perceptron(Vector([1, 1]))
+    p = Perceptron(epochs, 1, [1, 1])
 
-    w = p.learn(M_pos, M_neg)
+    assert p.config["w"] == [1, 1]
+    assert p.config["learning_rate"] == 1
+    assert p.config["epochs"] == epochs
+    assert p.config["bias"] == 0
 
-    history = p.history()
+    w = p.learn(X, y)
+    assert w.tolist() == [-2.0, 4.0]
+    assert p.w is w
+    assert p.bias == -8.0
+    assert p.learning_rate == 1
+    assert p.epochs == epochs
 
-    for step in history:
-        print(step)
+    assert p.test([1, 1.5]) == 0
+    assert p.test([2, 3.5]) == 1
+
+    for i in p.log:
+        print(i)
+
+
