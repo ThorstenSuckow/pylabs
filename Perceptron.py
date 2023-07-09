@@ -38,6 +38,9 @@ class Perceptron:
         (n, m) = X.shape  # n is the number of samples, m is the number of features
 
         self.w = numpy.random.randn(m) if self.w is None else self.w
+
+        w_initial = self.w
+
         epochs = self.epochs
 
         learning_rate = self.learning_rate
@@ -67,12 +70,16 @@ class Perceptron:
                 self.log.append({
                     "w": self.w.copy(),
                     "w_prev": w_prev,
-                    "epoch": epoch,
+                    "epoch": f"{epoch + 1}.{i + 1}",
+                    "accuracy": 1 - (errors / n),
                     "bias": self.bias,
                     "error": error,
                     "X": X[i],
                     "y": y[i],
                     "result": result,
+                    "epochs_required": -1,
+                    "learning_rate": learning_rate,
+                    "w_initial": w_initial
                 })
             accuracy = 1 - (errors / n)
             self.epoch_list.append(f'Epoch {epoch + 1}: accuracy = {accuracy:.3f}')
@@ -83,6 +90,9 @@ class Perceptron:
                 break
 
         self.result_info = f'Epochs ({epoch + 1}/{self.epochs}) finished, w is = {self.w}, bias is {self.bias} error count is {errors:.3f}'
+
+        for log in self.log:
+            log["epochs_required"] = epoch + 1
 
         return self.w
 
