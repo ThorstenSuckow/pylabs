@@ -5,7 +5,6 @@ from Vector import Vector
 
 
 def test_learn():
-
     epochs = 20
     X = numpy.array([
         [1, 1], [2, 2], [3, 4], [4, 4]
@@ -21,6 +20,7 @@ def test_learn():
     assert p.config["bias"] == 0
 
     w = p.learn(X, y)
+
     assert w.tolist() == [-2.0, 4.0]
     assert p.w is w
     assert p.bias == -8.0
@@ -29,8 +29,3 @@ def test_learn():
 
     assert p.test([1, 1.5]) == 0
     assert p.test([2, 3.5]) == 1
-
-    for i in p.log:
-        print(i)
-
-
