@@ -94,6 +94,8 @@ class Perceptron:
         for log in self.log:
             log["epochs_required"] = epoch + 1
 
+        self.w = self.w if accuracy == 1 else None
+
         return self.w
 
     def apply_defaults(self):

@@ -29,3 +29,11 @@ def test_learn():
 
     assert p.test([1, 1.5]) == 0
     assert p.test([2, 3.5]) == 1
+
+    # XOR
+    X = numpy.array([
+        [0, 0], [0, 1], [1, 0], [1, 1]
+    ])
+    y = numpy.array([0, 1, 1, 0])
+    w = p.learn(X, y)
+    assert w is None
