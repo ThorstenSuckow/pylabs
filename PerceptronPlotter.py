@@ -1,4 +1,3 @@
-import matplotlib.pyplot
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -8,8 +7,10 @@ from matplotlib.patches import Circle
 
 class PerceptronPlotter:
 
-    def __init__(self, log, X, y, min=-5, max=5, ):
+    def __init__(self, log, X, y, title="", min_max=None):
 
+        self.previous_weight_color = "#ff8a57"
+        self.active_data_color = "#7fff00"
         self.anim = None
         self.next_weight_text = None
         self.previous_weight_text = None
@@ -24,15 +25,27 @@ class PerceptronPlotter:
         self.separator = None
         self.weight_vector = None
         self.next_weight_vector = None
+        self.title_text = None
 
         self.is_drawn = False
 
         self.fig, self.ax = plt.subplots()
-        self.min = min
-        self.max = max
+
+        if min_max is None:
+            MIN = abs(X[:, 0].min()) + 1
+            MAX = abs((X[:, 1].max())) + 1
+            min_max = [min(-MIN, MIN, -MAX), max(-MIN, MAX)]
+
+        self.min = min_max[0]
+        self.max = min_max[1]
         self.log = log
         self.X = X
         self.y = y
+
+        self.title = title
+
+        self.column_pos = self.max + 0.2
+        self.line_factor = (abs(self.max) / 5)
 
     def draw_graph(self):
         self.is_drawn=True
@@ -75,7 +88,7 @@ class PerceptronPlotter:
         if not self.weight_vector:
             self.weight_vector = plt.quiver(
                 0, 0, 0, 0,
-                color='r', scale=1, units='xy', angles='xy', scale_units='xy', width=0.02
+                color=self.previous_weight_color, scale=1, units='xy', angles='xy', scale_units='xy', width=0.02
             )
 
         if not self.next_weight_vector:
@@ -85,11 +98,11 @@ class PerceptronPlotter:
             )
 
         if not self.active_value:
-            self.active_value = plt.Circle((X[0], X[1]), 0.1, alpha=0.5, color='orange')
+            self.active_value = plt.Circle((X[0], X[1]), 0.25, alpha=0.5, color=self.active_data_color)
             ax.add_patch(self.active_value)
 
         if not self.separator:
-            self.separator = plt.plot([0, 0], [0, 0], 'k', ls=':')
+            self.separator = plt.plot([0, 0], [0, 0], '#5a4099', ls=':')
 
         self.active_value.center = X
 
@@ -101,26 +114,31 @@ class PerceptronPlotter:
         # => y = mx + c: w[1]*y = -w[0]*x - bias
         slope = -w_prev[0] / w_prev[1]
         intercept = -step["bias"] / w_prev[1]
-        self.separator[0].set(xdata=[-5, 5], ydata=slope * np.array([-5, 5]) + intercept)
+        self.separator[0].set(xdata=[self.min, self.max], ydata=slope * np.array([self.min, self.max]) + intercept)
 
-    def update_meta_info(self, step):
+    def update_meta_info(self, step, accuracy):
 
         MAX = self.max
+        MIN = self.min
+
+        if self.title and not self.title_text:
+            self.title_text = plt.text(self.column_pos, MAX - (self.line_factor/2), self.title)
 
         if not self.epoch_text:
-            self.epoch_text = plt.text(MAX, -1, "")
+            self.epoch_text = plt.text(self.column_pos, -1 * (abs(MAX) / 5), "")
+            self.epoch_text.set_color("#ff4527" if accuracy != 1 else "#366d00")
 
         if not self.bias_text:
-            self.bias_text = plt.text(MAX, -1.5, "")
+            self.bias_text = plt.text(self.column_pos, -1.5 * self.line_factor, "")
 
         if not self.accuracy_text:
-            self.accuracy_text = plt.text(MAX, -2, "")
+            self.accuracy_text = plt.text(self.column_pos, -2 * self.line_factor, "")
 
         if self.learning_rate_text is None:
-            self.learning_rate_text = plt.text(MAX, -3, f"Learning Rate: " + str("%.3f" % step['learning_rate']))
+            self.learning_rate_text = plt.text(self.column_pos, -3 * self.line_factor, f"Learning Rate: " + str("%.3f" % step['learning_rate']))
         if self.w_initial_text is None:
             self.w_initial_text = plt.text(
-                MAX, -3.5,
+                self.column_pos, -3.5 * (abs(MAX) / 5),
                 f"Initial w: " + str("%.3f" % step['w_initial'][0]) + "  " + str("%.3f" % step['w_initial'][1])
             )
 
@@ -141,35 +159,22 @@ class PerceptronPlotter:
         X = step["X"]
         w = step["w"]
 
-        if not self.next_weight_text:
-            self.next_weight_text = plt.text(MAX, 1.5, "", color="k")
+        if not self.current_data_text:
+            self.current_data_text = plt.text(self.column_pos, MAX + (- 1.5 * self.line_factor), "", color="k")
 
         if not self.previous_weight_text:
-            self.previous_weight_text = plt.text(MAX, 2.5, "", color="r")
+            self.previous_weight_text = plt.text(self.column_pos, MAX + (- 2.2 * self.line_factor), "", color=self.previous_weight_color)
 
-        if not self.current_data_text:
-            self.current_data_text = TextArea("", textprops=dict(color="k"))
+        if not self.next_weight_text:
+            self.next_weight_text = plt.text(self.column_pos, MAX + (- 3 * self.line_factor), "", color="k")
+
 
         self.previous_weight_text.set_text(
             r' $w = \binom{' + str("%.2f" % w_prev[0]) + '}{' + str("%.2f" % w_prev[1]) + '}$')
         self.next_weight_text.set_text(r"$\Delta w=(" + str("%.2f" % w[0]) + ", " + str("%.2f" % w[1]) + ")$")
         self.current_data_text.set_text(r"$x = (" + str("%.2f" % X[0]) + ", " + str("%.2f" % X[1]) + ")$")
 
-        if not self.anchored_box:
-            box2 = DrawingArea(0, 0, 0, 0)
-            c2 = Circle((0, -5.5), radius=4.5, fc="orange")
-            box2.add_artist(c2)
-            box = HPacker(children=[box2, self.current_data_text],
-                          align="right",
-                          pad=0, sep=5)
-            self.anchored_box = AnchoredOffsetbox(loc='lower left',
-                                             child=box, pad=0.,
-                                             frameon=False,
-                                             bbox_to_anchor=(1.02, 0.82),
-                                             bbox_transform=ax.transAxes,
-                                             borderpad=0.,
-                                             )
-            ax.add_artist(self.anchored_box)
+
 
     def frame(self, num, from_anim = False):
         step = self.log[num]
@@ -180,7 +185,7 @@ class PerceptronPlotter:
 
         self.update_plot(step)
         self.update_calculation_info(step)
-        self.update_meta_info(step)
+        self.update_meta_info(step, self.log[len(self.log) - 1]["accuracy"])
 
         if not from_anim:
             plt.show();
@@ -189,7 +194,7 @@ class PerceptronPlotter:
         pass
 
 
-    def animate(self):
+    def animate(self, interval = 1000):
 
         self.frame(0, True)
 
@@ -198,7 +203,7 @@ class PerceptronPlotter:
             init_func=self.init_anim,
             fargs=([True]),
             frames=len(self.log),
-            interval=1000,
+            interval=interval,
             blit=False)
 
         plt.show()
