@@ -33,8 +33,6 @@ class Perceptron:
 
         self.apply_defaults()
 
-        # s sampled
-        # m features
         (n, m) = X.shape  # n is the number of samples, m is the number of features
 
         self.w = numpy.random.randn(m) if self.w is None else self.w
