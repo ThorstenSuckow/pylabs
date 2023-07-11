@@ -72,13 +72,13 @@ The learning rate for the algorithm. The smaller this value, the more steps are 
  - Type: `tupel`
 The initial weight vector that should be used. If none provided, a random weight vector will be created.
 
-For more information, consult the source code, which should be pretty self explanatory.
+For more information, consult the source code, which should be pretty self-explanatory.
 
 ## `PerceptronPlotter.py`
 
 Allows for creating individual images or a complete animation based on the data from a `Perceptron`'s log.
 
-Once you have created a `Perceptron` and fed it with input- and putput-data, `learn()` will determine the linear
+Once you have created a `Perceptron` and fed it with input- and output-data, `learn()` will determine the linear
 separability of the input-data and create a weight-vector, whereas each step of the algorithm is kept in the 
 `Perceptron`'s log. To use it with the `PerceptronPlotter`, create an instance and pass the log along with
 input- and output-data used by the Perceptron:
