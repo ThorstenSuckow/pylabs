@@ -6,6 +6,7 @@ class Perceptron:
     def __init__(self, n_epochs=10, learning_rate=1, w=None):
 
         self.log = []
+        self.tbl = []
         self.result_info = None
         self.epoch_list = None
         self.w = None
@@ -20,14 +21,16 @@ class Perceptron:
             "bias": 0
         }
 
-    def test(self, X):
+    def test(self, net):
+        return self.heaviside(net);
 
-        z = X @ self.w + self.bias
+    def heaviside(self, net):
+
 
         # 0 z < 0
         # 1 z == 0
         # 1 z > 0
-        return numpy.heaviside(z, 1)
+        return numpy.heaviside(net, 1)
 
     def learn(self, X, y):
 
@@ -51,12 +54,13 @@ class Perceptron:
 
             for i in range(n):
                 expected = y[i]
-                result = self.test(X[i])
+                net = X[i] @ self.w + self.bias
+                result = self.heaviside(net)
                 error = 0
 
-                #   1 != 0
-                #   0 != 1
                 w_prev = self.w.copy()
+                bias_prev = self.bias
+
                 if result != expected:
                     error = expected - result
 
@@ -65,11 +69,26 @@ class Perceptron:
 
                     errors += 1
 
+                self.tbl.append(["|",
+                     X[i][0], "|",
+                     X[i][1],"|",
+                     w_prev[0],"|",
+                     w_prev[1],"|",
+                     bias_prev,"|",
+                     net,"|",
+                     y[i],"|",
+                     result,"|",
+                     self.w.copy()[0],"|",
+                     self.w.copy()[1],"|",
+                     self.bias,"|",
+                ])
+
                 self.log.append({
-                    "w": self.w.copy(),
                     "w_prev": w_prev,
                     "epoch": f"{epoch + 1}.{i + 1}",
+                    "w": self.w.copy(),
                     "accuracy": 1 - (errors / n),
+                    "net": net,
                     "bias": self.bias,
                     "error": error,
                     "X": X[i],
