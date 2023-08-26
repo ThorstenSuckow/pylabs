@@ -112,15 +112,16 @@ class PerceptronPlotter:
         # w[0] * x + w[1] * y + bias = 0
         # => y = mx + c: w[1]*y = -w[0]*x - bias
         slope = -w_prev[0] / w_prev[1]
-        intercept = -step["bias"] / w_prev[1]
+        intercept = -step["bias_prev"] / w_prev[1]
         self.separator[0].set(xdata=[self.min, self.max], ydata=slope * np.array([self.min, self.max]) + intercept)
 
         self.weight_vector.set_UVC(w_prev[0], w_prev[1]);
         self.next_weight_vector.set_UVC(w[0] - w_prev[0], w[1] - w_prev[1])
 
         if slope != 0:
-            self.weight_vector.set_offsets([(-intercept/slope)/2, (slope * (-intercept/slope)/2) + intercept]);
-            self.next_weight_vector.set_offsets([w_prev[0] + (-intercept/slope)/2,  w_prev[1] + (slope * (-intercept/slope)/2) + intercept]);
+            self.weight_vector.set_offsets([(-intercept / slope) / 2, (slope * (-intercept / slope) / 2) + intercept]);
+            self.next_weight_vector.set_offsets(
+                [w_prev[0] + (-intercept / slope) / 2, w_prev[1] + (slope * (-intercept / slope) / 2) + intercept]);
         else:
             self.weight_vector.set_offsets([0, intercept]);
             self.next_weight_vector.set_offsets([w_prev[0], w_prev[1] + intercept]);
@@ -151,7 +152,7 @@ class PerceptronPlotter:
                 f"Initial w: " + str("%.3f" % step['w_initial'][0]) + "  " + str("%.3f" % step['w_initial'][1])
             )
 
-        self.bias_text.set_text(f"Bias: " + str("%.3f" % step['bias']))
+        self.bias_text.set_text(f"Bias: " + str("%.3f" % step['bias_prev']))
 
         self.accuracy_text.set_text(f"Accuracy: " + str("%.3f" % step['accuracy']))
 
@@ -198,6 +199,8 @@ class PerceptronPlotter:
 
         if not from_anim:
             plt.show();
+
+        return plt;
 
     def init_anim(self):
         pass

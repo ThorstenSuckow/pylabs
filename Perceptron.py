@@ -89,6 +89,7 @@ class Perceptron:
                     "w": self.w.copy(),
                     "accuracy": 1 - (errors / n),
                     "net": net,
+                    "bias_prev": bias_prev,
                     "bias": self.bias,
                     "error": error,
                     "X": X[i],
