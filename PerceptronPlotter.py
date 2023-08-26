@@ -7,7 +7,7 @@ from matplotlib.patches import Circle
 
 class PerceptronPlotter:
 
-    def __init__(self, log, X, y, title="", min_max=None):
+    def __init__(self, log, X, y, title="", min_max=None, margins=None):
 
         self.previous_weight_color = "#ff8a57"
         self.active_data_color = "#7fff00"
@@ -31,9 +31,12 @@ class PerceptronPlotter:
 
         self.fig, self.ax = plt.subplots()
 
+        if margins is None:
+            margins = [3, 3]
+
         if min_max is None:
-            MIN = abs(X[:, 0].min()) + 1
-            MAX = abs((X[:, 1].max())) + 1
+            MIN = abs(X[:, 0].min()) + margins[0]
+            MAX = abs((X[:, 1].max())) + margins[1]
             min_max = [min(-MIN, MIN, -MAX), max(-MIN, MAX)]
 
         self.min = min_max[0]
@@ -106,15 +109,21 @@ class PerceptronPlotter:
 
         self.active_value.center = X
 
-        self.weight_vector.set_UVC(w_prev[0], w_prev[1])
-        self.next_weight_vector.set_UVC(w[0], w[1])
-        self.next_weight_vector.set_offsets(w_prev)
-
         # w[0] * x + w[1] * y + bias = 0
         # => y = mx + c: w[1]*y = -w[0]*x - bias
         slope = -w_prev[0] / w_prev[1]
         intercept = -step["bias"] / w_prev[1]
         self.separator[0].set(xdata=[self.min, self.max], ydata=slope * np.array([self.min, self.max]) + intercept)
+
+        self.weight_vector.set_UVC(w_prev[0], w_prev[1]);
+        self.next_weight_vector.set_UVC(w[0] - w_prev[0], w[1] - w_prev[1])
+
+        if slope != 0:
+            self.weight_vector.set_offsets([(-intercept/slope)/2, (slope * (-intercept/slope)/2) + intercept]);
+            self.next_weight_vector.set_offsets([w_prev[0] + (-intercept/slope)/2,  w_prev[1] + (slope * (-intercept/slope)/2) + intercept]);
+        else:
+            self.weight_vector.set_offsets([0, intercept]);
+            self.next_weight_vector.set_offsets([w_prev[0], w_prev[1] + intercept]);
 
     def update_meta_info(self, step, accuracy):
 
@@ -171,7 +180,7 @@ class PerceptronPlotter:
 
         self.previous_weight_text.set_text(
             r' $w = \binom{' + str("%.2f" % w_prev[0]) + '}{' + str("%.2f" % w_prev[1]) + '}$')
-        self.next_weight_text.set_text(r"$\Delta w=(" + str("%.2f" % w[0]) + ", " + str("%.2f" % w[1]) + ")$")
+        self.next_weight_text.set_text(r"$\Delta w=(" + str("%.2f" % (w[0] - w_prev[0])) + ", " + str("%.2f" % (w[1]-w_prev[1])) + ")$")
         self.current_data_text.set_text(r"$x = (" + str("%.2f" % X[0]) + ", " + str("%.2f" % X[1]) + ")$")
 
 
