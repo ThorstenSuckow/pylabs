@@ -116,15 +116,11 @@ class PerceptronPlotter:
         self.separator[0].set(xdata=[self.min, self.max], ydata=slope * np.array([self.min, self.max]) + intercept)
 
         self.weight_vector.set_UVC(w_prev[0], w_prev[1]);
-        self.next_weight_vector.set_UVC(w[0] - w_prev[0], w[1] - w_prev[1])
+        self.next_weight_vector.set_UVC(w[0] * 0.5, w[1] * 0.5)
 
-        if slope != 0:
-            self.weight_vector.set_offsets([(-intercept / slope) / 2, (slope * (-intercept / slope) / 2) + intercept]);
-            self.next_weight_vector.set_offsets(
-                [w_prev[0] + (-intercept / slope) / 2, w_prev[1] + (slope * (-intercept / slope) / 2) + intercept]);
-        else:
-            self.weight_vector.set_offsets([0, intercept]);
-            self.next_weight_vector.set_offsets([w_prev[0], w_prev[1] + intercept]);
+        self.weight_vector.set_offsets([0, 0]);
+        self.next_weight_vector.set_offsets([w_prev[0], w_prev[1]]);
+
 
     def update_meta_info(self, step, accuracy):
 
